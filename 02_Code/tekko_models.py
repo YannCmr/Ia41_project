@@ -236,7 +236,7 @@ class OptionDialog:
         self._black = current_black_name
         self._white = current_white_name
 
-        # Row and column settings, as in Othello
+        # Row and column settings
         self._setup_options()
         self._ok_clicked = False
 

@@ -37,9 +37,6 @@ class TekkoGame:
         self.placement_phase = True  # Tracks if we are still placing pieces
         self.winner = None  # Tracks the winner
 
-
-        self.increment = 0
-
     def _new_game_board(self, rows, cols):
         """ Creates an empty board for the game. """
         return [[NONE for _ in range(cols)] for _ in range(rows)]
@@ -90,19 +87,19 @@ class TekkoGame:
     def _move_piece(self, row, col, new_row, new_col):
         """ Moves a piece to an adjacent cell after the placement phase. """
         if not self._is_valid_cell(new_row, new_col):
-            raise InvalidMoveException("Le mouvement est hors des limites.")
+            raise InvalidMoveException("The destination cell is invalid.")
         if self.current_board[row][col] != self.turn:
-            raise InvalidMoveException("Vous devez déplacer votre propre pion.")
+            raise InvalidMoveException("You can only move your own pieces.")
         if self.current_board[new_row][new_col] != NONE:
-            raise InvalidMoveException("La cellule de destination n'est pas vide.")
+            raise InvalidMoveException("The destination cell is already occupied.")
         if not self._is_adjacent(row, col, new_row, new_col):
-            raise InvalidMoveException("Le mouvement doit se faire vers une cellule adjacente.")
+            raise InvalidMoveException("The destination cell is not adjacent.")
 
-        # Do the mouvement
+        # Do the movement
         self.current_board[row][col] = NONE
         self.current_board[new_row][new_col] = self.turn
 
-        # Check immediatelly for a winner
+        # Check immediately for a winner
         if self.check_winner():
             self.winner = self.turn  # Define the winner
             return True  # Return True to indicate a win

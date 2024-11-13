@@ -1,8 +1,8 @@
 # Tekko specific GUI adjustments based on Othello's interface
 
 import importlib
-import tekko  # Assuming `tekko.py` has Tekko game logic similar to `othello.py`
-import tekko_models  # Reusing the GUI components from `tekko_models.py`
+import tekko  
+import tekko_models 
 import tkinter
 
 # Update GUI constants for Tekko, if any changes required
@@ -28,7 +28,7 @@ class TekkoGUI:
         # Initialize TekkoGame with an empty board for Tekko
         self._game_state = tekko.TekkoGame(self._rows, self._columns, tekko.BLACK)
 
-        # Set up GUI elements as in Othello
+        # Set up GUI elements
         self._root_window = tkinter.Tk()
         self._root_window.configure(background=tekko_models.BACKGROUND_COLOR)
         self._black_player = tekko_models.Player(self._black_name, self._root_window)
@@ -44,7 +44,7 @@ class TekkoGUI:
         )
         self._player_turn = tekko_models.Turn(self._game_state, self._root_window)
 
-        # for higlighting moves and the current selected piece
+        # for highlighting moves and the current selected piece
         self._selected_piece = None  # Tracks the currently selected piece
         self._highlighted_moves = []  # Tracks available moves for the selected piece
 
@@ -53,7 +53,7 @@ class TekkoGUI:
         self._board.get_board().bind("<Configure>", self._on_board_resized)
         self._board.get_board().bind("<Button-1>", self._on_board_clicked)
 
-        # Menu setup (same as in Othello)
+        # Menu setup
         self._menu_bar = tkinter.Menu(self._root_window)
         self._game_menu = tkinter.Menu(self._menu_bar, tearoff=0)
         self._game_menu.add_command(label="New Game", command=self._new_game)
@@ -82,6 +82,11 @@ class TekkoGUI:
             row=3, column=0, columnspan=2, padx=10, pady=10
         )
 
+        # For the notification to the user
+        self._status_label = tkinter.Label(self._root_window, text="", font=("Helvetica", 12), fg="red")
+        self._status_label.grid(row=4, column=0, columnspan=2, pady=(10, 0))
+
+
         # Window row/column weight configuration
         self._root_window.rowconfigure(0, weight=1)
         self._root_window.rowconfigure(1, weight=1)
@@ -90,6 +95,8 @@ class TekkoGUI:
         self._root_window.columnconfigure(1, weight=1)
         self.cb_timer_idx = []
         self.update_timer()
+
+
 
 
     def highlight_piece(self, row, col):
@@ -193,6 +200,9 @@ class TekkoGUI:
                     # Move to the selected available cell
                     self._move_selected_piece(row, col)
                     return  # Exit after moving
+                else:
+                    self._move_selected_piece(row, col)  # Call the function, but will be in the except, used to get the error message for the user
+
 
             # If no piece is selected, check if the cell has the current player's piece
             if self._game_state.get_board()[row][col] == self._game_state.get_turn():
@@ -206,12 +216,24 @@ class TekkoGUI:
                 self.highlight_available_moves(self._highlighted_moves)
             else:
                 # Clear selected piece if click is invalid
+                # comm.show_message(self,"Invalid selection! Select one of your own pieces.")
                 self._selected_piece = None
         else:
             # If still in placement phase, do not highlight; handle placement instead
-            self._play(row, col)
+            try:
+                self._play(row, col)
+            except tekko.InvalidMoveException as e:
+                self.show_message(str(e))
+
+    def show_message(self, message):
+        """Displays a message in the status label and clears it after a delay."""
+        self._status_label.config(text=message)
+        self._root_window.after(3000, self.clear_message)  # Clear message after 3 seconds
 
 
+    def clear_message(self):
+        """Clears the status label message."""
+        self._status_label.config(text="")
 
     def _find_available_moves(self, row, col):
         """Return a list of available moves (adjacent empty cells) for the selected piece."""
@@ -230,7 +252,7 @@ class TekkoGUI:
         if self._selected_piece:
             old_row, old_col = self._selected_piece
             try:
-                # Check if the mouvement lead to a victory
+                # Check if the movement lead to a victory
                 if self._game_state.move(old_row, old_col, row, col):
                     self._board.update_game_state(self._game_state)
                     self._board.redraw_board()
@@ -244,7 +266,8 @@ class TekkoGUI:
                 self._board.redraw_board()
                 self._player_turn.switch_turn(self._game_state)
                 self._selected_piece = None
-            except tekko.InvalidMoveException:
+            except tekko.InvalidMoveException as e:
+                self.show_message(str(e))
                 self._selected_piece = None
 
     def _play(self, row, col):
@@ -263,10 +286,12 @@ class TekkoGUI:
                 self._player_turn.switch_turn(self._game_state)
                 self._root_window.after(WAITING_TIME, self._play_ai)
 
-        except tekko.InvalidMoveException:
-            pass
-        except tekko.InvalidTypeException:
-            pass
+        except tekko.InvalidMoveException as e:
+            # Show the exception message to the user
+            self.show_message(str(e))
+        except tekko.InvalidTypeException as e:
+            # Handle other types of exceptions similarly if needed
+            self.show_message(str(e))
 
     def _convert_point_coord_to_move(self, pointx: int, pointy: int):
         row = int(pointy // self._board.get_cell_height())
