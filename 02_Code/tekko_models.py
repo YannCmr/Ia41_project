@@ -229,14 +229,10 @@ class Turn:
 class OptionDialog:
     def __init__(self, current_rows, current_columns, current_black_name, current_white_name):
         self._dialog_window = tkinter.Toplevel()
-        self._row_column_option_list = range(4, 20)
-
         # Searches for modules in the ai folder
         self._player_option_list = ["Human"] + [os.path.basename(path).split(".")[0] for path in glob.glob("ai/*.py")]
 
         # Game attributes
-        self._rows = current_rows
-        self._columns = current_columns
         self._black = current_black_name
         self._white = current_white_name
 
@@ -245,28 +241,11 @@ class OptionDialog:
         self._ok_clicked = False
 
     def _setup_options(self):
-        """ Sets up row, column, and player options in the dialog """
-        # Row setting
-        self._row_frame = tkinter.Frame(master=self._dialog_window)
-        self._row_label = tkinter.Label(master=self._row_frame, text='Rows:', font=DIALOG_FONT)
-        self._row_label.grid(row=0, column=0, sticky=tkinter.E, padx=10, pady=10)
-        self._rows = tkinter.IntVar(value=self._rows)
-        self._row_option_menu = tkinter.OptionMenu(self._row_frame, self._rows, *self._row_column_option_list)
-        self._row_option_menu.grid(row=0, column=1, sticky=tkinter.W, padx=10, pady=10)
-        self._row_frame.grid(row=0, column=0, sticky=tkinter.W, padx=10, pady=10)
-
-        # Column setting
-        self._column_frame = tkinter.Frame(master=self._dialog_window)
-        self._column_label = tkinter.Label(master=self._column_frame, text='Columns:', font=DIALOG_FONT)
-        self._column_label.grid(row=0, column=0, sticky=tkinter.E, padx=10, pady=10)
-        self._columns = tkinter.IntVar(value=self._columns)
-        self._column_option_menu = tkinter.OptionMenu(self._column_frame, self._columns, *self._row_column_option_list)
-        self._column_option_menu.grid(row=0, column=1, sticky=tkinter.W, padx=10, pady=10)
-        self._column_frame.grid(row=0, column=1, sticky=tkinter.W, padx=10, pady=10)
-
-        # Player options for Black and White, similar to Othello
-        self._setup_player_option("Black", self._black, 1, 0)
-        self._setup_player_option("White", self._white, 1, 1)
+        """ player options in the dialog """
+                # Black player option
+        self._setup_player_option("Black", self._black, 0, 0)
+        # White player option
+        self._setup_player_option("White", self._white, 0, 1)
 
         # OK and Cancel Buttons
         self._button_frame = tkinter.Frame(master=self._dialog_window)
@@ -296,10 +275,12 @@ class OptionDialog:
         return self._ok_clicked
 
     def get_rows(self):
-        return self._rows.get()
+        """Fixed rows value for the board."""
+        return 5
 
     def get_columns(self):
-        return self._columns.get()
+        """Fixed columns value for the board."""
+        return 5
 
     def get_black_name(self):
         return self._black.get()

@@ -44,6 +44,11 @@ class TekkoGUI:
         )
         self._player_turn = tekko_models.Turn(self._game_state, self._root_window)
 
+        # for higlighting moves and the current selected piece
+        self._selected_piece = None  # Tracks the currently selected piece
+        self._highlighted_moves = []  # Tracks available moves for the selected piece
+
+
         # Bind the game board
         self._board.get_board().bind("<Configure>", self._on_board_resized)
         self._board.get_board().bind("<Button-1>", self._on_board_clicked)
@@ -85,6 +90,36 @@ class TekkoGUI:
         self._root_window.columnconfigure(1, weight=1)
         self.cb_timer_idx = []
         self.update_timer()
+
+
+    def highlight_piece(self, row, col):
+        """Draw a yellow outline around the selected piece."""
+        cell_width = self._board.get_cell_width()
+        cell_height = self._board.get_cell_height()
+        x1, y1 = col * cell_width, row * cell_height
+        x2, y2 = x1 + cell_width, y1 + cell_height
+        self._board.get_board().create_rectangle(
+            x1, y1, x2, y2, outline="yellow", width=3
+        )
+
+    def highlight_available_moves(self, moves):
+        """Draw light green circles on available adjacent cells."""
+        cell_width = self._board.get_cell_width()
+        cell_height = self._board.get_cell_height()
+        for row, col in moves:
+            x_center = col * cell_width + cell_width / 2
+            y_center = row * cell_height + cell_height / 2
+            radius = min(cell_width, cell_height) / 4
+            self._board.get_board().create_oval(
+                x_center - radius, y_center - radius,
+                x_center + radius, y_center + radius,
+                outline="", fill="lightgreen"
+            )
+
+    def clear_highlights(self):
+        """Clear all highlights from the board."""
+        self._board.redraw_board()  # Redraws the board to clear previous highlights
+
 
     def start(self) -> None:
         """Runs the mainloop of the root window"""
@@ -144,16 +179,50 @@ class TekkoGUI:
         self._player_turn.update_turn_text()
 
     def _on_board_clicked(self, event: tkinter.Event) -> None:
-        """Handle move on the board for Tekko"""
-        move = self._convert_point_coord_to_move(event.x, event.y)
-        row, col = move
-        if self._game_state.placement_phase:
-            self._play(row, col)  # Place phase
-        else:
+        """Handles board click events for piece selection and highlights moves only in movement phase."""
+        row, col = self._convert_point_coord_to_move(event.x, event.y)
+
+        # Clear any existing highlights
+        self.clear_highlights()
+
+        # Only allow highlighting if in movement phase (placement phase is over)
+        if not self._game_state.placement_phase:
+            # If a piece is already selected, check if the click is on an available move
             if self._selected_piece:
-                self._move_selected_piece(row, col)  # Move selected piece
-            elif self._game_state.get_board()[row][col] == self._game_state.get_turn():
-                self._selected_piece = (row, col)  # Select piece for modification
+                if (row, col) in self._highlighted_moves:
+                    # Move to the selected available cell
+                    self._move_selected_piece(row, col)
+                    return  # Exit after moving
+
+            # If no piece is selected, check if the cell has the current player's piece
+            if self._game_state.get_board()[row][col] == self._game_state.get_turn():
+                self._selected_piece = (row, col)
+
+                # Highlight the selected piece
+                self.highlight_piece(row, col)
+
+                # Find available moves and highlight them
+                self._highlighted_moves = self._find_available_moves(row, col)
+                self.highlight_available_moves(self._highlighted_moves)
+            else:
+                # Clear selected piece if click is invalid
+                self._selected_piece = None
+        else:
+            # If still in placement phase, do not highlight; handle placement instead
+            self._play(row, col)
+
+
+
+    def _find_available_moves(self, row, col):
+        """Return a list of available moves (adjacent empty cells) for the selected piece."""
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]  # All 8 directions
+        available_moves = []
+        for drow, dcol in directions:
+            new_row, new_col = row + drow, col + dcol
+            if self._game_state._is_valid_cell(new_row, new_col) and self._game_state.get_board()[new_row][new_col] == tekko.NONE:
+                available_moves.append((new_row, new_col))
+        return available_moves
+
 
 
     def _move_selected_piece(self, row, col):
