@@ -141,7 +141,7 @@ class Score:
         """ Returns the score label """
         return self._score_label
 
-    def get_score(self) -> int:
+    def get_scores(self) -> int:
         """ Returns the score """
         return self._score
 

@@ -23,6 +23,8 @@ class TekkoGUI:
         self._black_ai = None
         self._white_ai = None
 
+        self._selected_piece = None  # Initialize selected piece tracking
+
         # Initialize TekkoGame with an empty board for Tekko
         self._game_state = tekko.TekkoGame(self._rows, self._columns, tekko.BLACK)
 
@@ -159,7 +161,16 @@ class TekkoGUI:
         if self._selected_piece:
             old_row, old_col = self._selected_piece
             try:
-                self._game_state.move(old_row, old_col, row, col)
+                # Check if the mouvement lead to a victory
+                if self._game_state.move(old_row, old_col, row, col):
+                    self._board.update_game_state(self._game_state)
+                    self._board.redraw_board()
+                    self._player_turn.display_winner(self._game_state.return_winner())
+                    [self._root_window.after_cancel(idx) for idx in self.cb_timer_idx]
+                    self.cb_timer_idx = []
+                    return  # end the game
+
+                # if not, we continue the game
                 self._board.update_game_state(self._game_state)
                 self._board.redraw_board()
                 self._player_turn.switch_turn(self._game_state)
