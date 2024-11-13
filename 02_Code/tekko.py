@@ -87,21 +87,30 @@ class TekkoGame:
     def _move_piece(self, row, col, new_row, new_col):
         """ Moves a piece to an adjacent cell after the placement phase. """
         if not self._is_valid_cell(new_row, new_col):
-            raise InvalidMoveException("Move is out of bounds.")
+            raise InvalidMoveException("The destination cell is invalid.")
         if self.current_board[row][col] != self.turn:
-            raise InvalidMoveException("You must move your own piece.")
+            raise InvalidMoveException("You can only move your own pieces.")
         if self.current_board[new_row][new_col] != NONE:
-            raise InvalidMoveException("Destination cell is not empty.")
+            raise InvalidMoveException("The destination cell is already occupied.")
         if not self._is_adjacent(row, col, new_row, new_col):
-            raise InvalidMoveException("Move must be to an adjacent cell.")
+            raise InvalidMoveException("The destination cell is not adjacent.")
 
-        # Move piece
+        # Do the movement
         self.current_board[row][col] = NONE
         self.current_board[new_row][new_col] = self.turn
 
+        # Check immediately for a winner
+        if self.check_winner():
+            self.winner = self.turn  # Define the winner
+            return True  # Return True to indicate a win
+
+        return False  # Return False to indicate no win
+
+
+
     def _is_adjacent(self, row, col, new_row, new_col):
-        """ Checks if the new cell is adjacent to the original cell. """
-        return abs(row - new_row) + abs(col - new_col) == 1
+        """Checks if the new cell is adjacent (horizontally, vertically, or diagonally) to the original cell."""
+        return max(abs(row - new_row), abs(col - new_col)) == 1
 
     def check_winner(self):
         """ Checks for a winning configuration on the board. """
@@ -176,3 +185,7 @@ class TekkoGame:
     def _is_valid_cell(self, row, col):
         """ Checks if a cell position is within the board's boundaries. """
         return 0 <= row < self.rows and 0 <= col < self.cols
+    
+    def get_scores(self, player):
+        """Calculates the score for the specified player."""
+        return sum(row.count(player) for row in self.current_board)
