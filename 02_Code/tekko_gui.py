@@ -189,20 +189,24 @@ class TekkoGUI:
         """Handles board click events for piece selection and highlights moves only in movement phase."""
         row, col = self._convert_point_coord_to_move(event.x, event.y)
 
+
         # Clear any existing highlights
         self.clear_highlights()
 
         # Only allow highlighting if in movement phase (placement phase is over)
         if not self._game_state.placement_phase:
-            # If a piece is already selected, check if the click is on an available move
             if self._selected_piece:
                 if (row, col) in self._highlighted_moves:
                     # Move to the selected available cell
-                    self._move_selected_piece(row, col)
-                    return  # Exit after moving
+                    try:
+                        self._play(*self._selected_piece, row, col)  # Use _play to handle the move
+                    except tekko.InvalidMoveException as e:
+                        self.show_message(str(e))
+                    self._selected_piece = None  # Clear selection after move
+                    return
                 else:
-                    self._move_selected_piece(row, col)  # Call the function, but will be in the except, used to get the error message for the user
-
+                    self.show_message("Invalid move. Please select a valid target cell.")
+                    self._selected_piece = None
 
             # If no piece is selected, check if the cell has the current player's piece
             if self._game_state.get_board()[row][col] == self._game_state.get_turn():
@@ -216,14 +220,15 @@ class TekkoGUI:
                 self.highlight_available_moves(self._highlighted_moves)
             else:
                 # Clear selected piece if click is invalid
-                # comm.show_message(self,"Invalid selection! Select one of your own pieces.")
+                self.show_message("Invalid selection. Please select your own piece.")
                 self._selected_piece = None
         else:
-            # If still in placement phase, do not highlight; handle placement instead
+            # If still in placement phase, handle placement instead
             try:
                 self._play(row, col)
             except tekko.InvalidMoveException as e:
                 self.show_message(str(e))
+
 
     def show_message(self, message):
         """Displays a message in the status label and clears it after a delay."""
@@ -245,34 +250,30 @@ class TekkoGUI:
                 available_moves.append((new_row, new_col))
         return available_moves
 
+    def _play(self, row, col, new_row=None, new_col=None):
+        """
+        Handles the game logic for placing and moving pieces based on the game phase.
 
+        Args:
+            row (int): Row of the selected cell.
+            col (int): Column of the selected cell.
+            new_row (int): Row of the destination cell for movement phase.
+            new_col (int): Column of the destination cell for movement phase.
 
-    def _move_selected_piece(self, row, col):
-        """Move the selected piece if adjacent and valid"""
-        if self._selected_piece:
-            old_row, old_col = self._selected_piece
-            try:
-                # Check if the movement lead to a victory
-                if self._game_state.move(old_row, old_col, row, col):
-                    self._board.update_game_state(self._game_state)
-                    self._board.redraw_board()
-                    self._player_turn.display_winner(self._game_state.return_winner())
-                    [self._root_window.after_cancel(idx) for idx in self.cb_timer_idx]
-                    self.cb_timer_idx = []
-                    return  # end the game
-
-                # if not, we continue the game
-                self._board.update_game_state(self._game_state)
-                self._board.redraw_board()
-                self._player_turn.switch_turn(self._game_state)
-                self._selected_piece = None
-            except tekko.InvalidMoveException as e:
-                self.show_message(str(e))
-                self._selected_piece = None
-
-    def _play(self, row, col):
+        Raises:
+            tekko.InvalidMoveException: If the move is invalid.
+        """
         try:
-            self._game_state.move(row, col)
+            if new_row is None and new_col is None:
+                # Phase of placement
+                self._game_state.move(row, col)
+            else:
+                # Phase of movement
+                self._game_state.move(row, col, new_row, new_col)
+            
+
+
+            #  Update the game state and redraw the board
             self._board.update_game_state(self._game_state)
             self._board.redraw_board()
             self._black_score.update_score(self._game_state)
@@ -287,10 +288,8 @@ class TekkoGUI:
                 self._root_window.after(WAITING_TIME, self._play_ai)
 
         except tekko.InvalidMoveException as e:
-            # Show the exception message to the user
             self.show_message(str(e))
         except tekko.InvalidTypeException as e:
-            # Handle other types of exceptions similarly if needed
             self.show_message(str(e))
 
     def _convert_point_coord_to_move(self, pointx: int, pointy: int):
@@ -302,14 +301,18 @@ class TekkoGUI:
         self._board.redraw_board()
 
     def _play_ai(self):
-        if self._game_state.get_turn() == tekko.BLACK and self._black_ai is not None:
+        """
+        Function to play the AI move based on the current turn.
+        """
+        current_turn = self._game_state.get_turn()
+        if current_turn == tekko.BLACK and self._black_ai is not None:
             move = self._black_ai.next_move(self._game_state.copy_game())
-            self._play(move[0], move[1])
-        elif (
-            self._game_state.get_turn() == tekko.WHITE and self._white_ai is not None
-        ):
+            self._play(move[0], move[1], move[2], move[3])
+            self._board.redraw_board() 
+        elif current_turn == tekko.WHITE and self._white_ai is not None:
             move = self._white_ai.next_move(self._game_state.copy_game())
-            self._play(move[0], move[1])
+            self._play(move[0], move[1], move[2], move[3])
+            self._board.redraw_board() 
 
 if __name__ == "__main__":
     TekkoGUI().start()
