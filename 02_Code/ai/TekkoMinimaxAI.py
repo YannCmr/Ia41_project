@@ -1,13 +1,13 @@
 import math
 import tekko
 
-class AlphaBetaYann:
-    def __init__(self, depth=4):
+class TekkoMinimaxAI:
+    def __init__(self, depth=3):
         self.depth = depth
 
     def next_move(self, board: tekko.TekkoGame) -> tuple[int, int, int, int]:
         """
-        Determines the next move for the AI using Alpha-Beta pruning.
+        Determines the next move for the AI.
 
         Args:
             board (tekko.TekkoGame): Current game state.
@@ -16,57 +16,34 @@ class AlphaBetaYann:
             tuple[int, int, int, int]: The next move (row, col, new_row, new_col) or
                                         (row, col, None, None) for placement phase.
         """
-        _, move = self.alpha_beta(board, self.depth, float('-inf'), float('inf'), True)
+        _, move = self.minimax(board, self.depth, 1)  # 1 for maximizing AI, -1 for opponent
         return move
 
-    def alpha_beta(self, game: tekko.TekkoGame, depth: int, alpha: float, beta: float, is_maximizing: bool):
-        """
-        Alpha-Beta pruning algorithm.
-
-        Args:
-            game (tekko.TekkoGame): Current game state.
-            depth (int): Remaining depth to evaluate.
-            alpha (float): Best value for the maximizing player.
-            beta (float): Best value for the minimizing player.
-            is_maximizing (bool): Whether the current player is maximizing.
-
-        Returns:
-            tuple[int, tuple]: Best evaluation score and the best move.
-        """
+    def minimax(self, game: tekko.TekkoGame, depth, is_maximizing):
         if depth == 0 or game.is_game_over():
             return self.evaluate_board(game), None
 
-        best_move = None
-
         if is_maximizing:
             max_eval = float('-inf')
+            best_move = None
             for move in self.get_all_possible_moves(game):
                 simulated_game = game.copy_game()
                 self.apply_move(simulated_game, move)
-
-                eval, _ = self.alpha_beta(simulated_game, depth - 1, alpha, beta, False)
-                if eval > max_eval:
-                    max_eval = eval
+                evaluation, _ = self.minimax(simulated_game, depth - 1, False)
+                if evaluation > max_eval:
+                    max_eval = evaluation
                     best_move = move
-
-                alpha = max(alpha, eval)
-                if beta <= alpha:
-                    break  # Beta cutoff
             return max_eval, best_move
         else:
             min_eval = float('inf')
+            best_move = None
             for move in self.get_all_possible_moves(game):
                 simulated_game = game.copy_game()
                 self.apply_move(simulated_game, move)
-
-                eval, _ = self.alpha_beta(simulated_game, depth - 1, alpha, beta, True)
-                if eval < min_eval:
-                    min_eval = eval
+                evaluation, _ = self.minimax(simulated_game, depth - 1, True)
+                if evaluation < min_eval:
+                    min_eval = evaluation
                     best_move = move
-
-                beta = min(beta, eval)
-                if beta <= alpha:
-                    break  # Alpha cutoff
             return min_eval, best_move
 
     def get_all_possible_moves(self, game):
@@ -97,7 +74,7 @@ class AlphaBetaYann:
                                 possible_moves.append((row, col, new_row, new_col))
         return possible_moves
 
-    def get_adjacent_cells(self, game: tekko.TekkoGame, row, col):
+    def get_adjacent_cells(self, game:tekko.TekkoGame, row, col):
         """Returns a list of adjacent cells for movement."""
         directions = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
         adjacent_cells = []
@@ -107,7 +84,7 @@ class AlphaBetaYann:
                 adjacent_cells.append((new_row, new_col))
         return adjacent_cells
 
-    def apply_move(self, game: tekko.TekkoGame, move):
+    def apply_move(self, game:tekko.TekkoGame, move):
         """Applies a move to the game state."""
         row, col, new_row, new_col = move
         if new_row is None and new_col is None:
@@ -117,7 +94,7 @@ class AlphaBetaYann:
 
     def evaluate_board(self, game: tekko.TekkoGame):
         """
-        Evaluates the board state for the current player.
+        Evaluates the board state for the current player with a more advanced heuristic.
 
         Args:
             game (tekko.TekkoGame): Current game state.
@@ -143,9 +120,9 @@ class AlphaBetaYann:
         # Combine all heuristics
         total_score = (
             base_score +
-            2 * central_control +  # Higher weight for strategic positions
-            5.5 * mobility_score +  # Balance mobility and central control
-            15 * near_victory_score  # Strongly favor near-victory conditions
+            15 * central_control +  # Higher weight for strategic positions
+            1.5 * mobility_score +  # Balance mobility and central control
+            5 * near_victory_score  # Strongly favor near-victory conditions
         )
         return total_score
 
@@ -212,36 +189,7 @@ class AlphaBetaYann:
                 if game.get_board()[row][col] == player:
                     # Check rows, columns, and diagonals for near-complete lines
                     near_victory_count += self.check_almost_winning(game, row, col, player)
-
-        # Add square detection
-        near_victory_count += self.check_square_winning(game, player)
         return near_victory_count
-
-    def check_square_winning(self, game, player):
-        """
-        Checks for 2x2 squares of the player's pieces.
-
-        Args:
-            game (tekko.TekkoGame): Current game state.
-            player (str): Current player ('B' or 'W').
-
-        Returns:
-            int: Number of 2x2 square configurations.
-        """
-        board = game.get_board()
-        rows, cols = game.get_rows(), game.get_columns()
-        square_count = 0
-
-        for row in range(rows - 1):  # Stop 1 row before the edge
-            for col in range(cols - 1):  # Stop 1 column before the edge
-                # Check if the 2x2 square is entirely occupied by the player's pieces
-                if (board[row][col] == player and
-                    board[row][col + 1] == player and
-                    board[row + 1][col] == player and
-                    board[row + 1][col + 1] == player):
-                    square_count += 1
-
-        return square_count
 
     def check_almost_winning(self, game, row, col, player):
         """
@@ -277,3 +225,6 @@ class AlphaBetaYann:
                 count += 1
         return count
 
+
+    def __str__(self):
+        return "TekkoMinimaxAI"
