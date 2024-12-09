@@ -189,3 +189,14 @@ class TekkoGame:
     def get_scores(self, player):
         """Calculates the score for the specified player."""
         return sum(row.count(player) for row in self.current_board)
+    
+
+    def copy_game(self):
+        """Creates a deep copy of the current game state."""
+        new_game = TekkoGame(self.rows, self.cols, self.turn)
+        new_game.current_board = [row[:] for row in self.current_board]
+        new_game.black_pieces = self.black_pieces
+        new_game.white_pieces = self.white_pieces
+        new_game.placement_phase = self.placement_phase
+        new_game.winner = self.winner
+        return new_game
