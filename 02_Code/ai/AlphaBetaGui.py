@@ -95,13 +95,28 @@ class AlphaBetaGui:
 
         # Proximity to victory: reward near-winning configurations
         near_victory_score = self.evaluate_near_victory(game, current_player)
-
+        
+        # Check the defensives moves
+        defense_score = self.evaluate_defense(game, current_player)
+        
+        # Check the connectivity
+        connectivity_score = self.evaluate_connectivity(game, current_player)
+        
         # Combine all heuristics
         total_score = (
-            base_score +
-            2 * central_control +  # Higher weight for strategic positions
-            5.5 * mobility_score +  # Balance mobility and central control
-            15 * near_victory_score  # Strongly favor near-victory conditions
+            #base_score +
+            #2 * central_control +  # Higher weight for strategic positions
+            #5.5 * mobility_score +  # Balance mobility and central control
+            #15 * near_victory_score  # Strongly favor near-victory conditions
+            #10 * defense_score +  # Wheigt for defensie
+            #3 * connectivity_score  # Wheigt for connectivity
+            
+            1.0 * base_score +
+            2.5 * central_control +
+            6.0 * mobility_score +
+            17.0 * near_victory_score +
+            11.0 * defense_score +
+            4.0 * connectivity_score
         )
         return total_score
     
@@ -176,3 +191,128 @@ class AlphaBetaGui:
             if line_pieces == 3 and empty_spaces == 1:
                 count += 1
         return count
+    
+    def evaluate_defense(self, game: tekko.TekkoGame, player):
+        opponent = tekko.BLACK if player == tekko.WHITE else tekko.WHITE
+        defensive_score = 0
+
+        # Bloquage des configurations gagnantes de l'adversaire
+        defensive_score += self.block_near_winning_configurations(game, opponent)
+
+        # Protection contre les carrés gagnants potentiels
+        defensive_score += self.prevent_opponent_squares(game, player, opponent)
+
+        return defensive_score
+    
+        
+    def block_near_winning_configurations(self, game: tekko.TekkoGame, opponent):
+        block_score = 0
+        board = game.get_board()
+        
+        # Détection des lignes presque gagnantes de l'adversaire
+        for row in range(game.get_rows()):
+            for col in range(game.get_columns()):
+                if board[row][col] == opponent:
+                    # Vérifie et pénalise les lignes presque gagnantes de l'adversaire
+                    block_score += self.check_blockable_near_winning(game, row, col, opponent)
+        
+        return block_score
+
+    def check_blockable_near_winning(self, game, row, col, opponent):
+        directions = [(1, 0), (0, 1), (1, 1), (1, -1)]
+        block_potential = 0
+
+        for dr, dc in directions:
+            line_pieces = 0
+            blockable_spaces = 0
+            
+            for i in range(4):
+                r, c = row + i * dr, col + i * dc
+                if 0 <= r < game.get_rows() and 0 <= c < game.get_columns():
+                    if game.get_board()[r][c] == opponent:
+                        line_pieces += 1
+                    elif game.get_board()[r][c] == tekko.NONE:
+                        blockable_spaces += 1
+                else:
+                    break
+            
+            # Score élevé si l'adversaire a 3 pièces avec un espace bloquable
+            if line_pieces == 3 and blockable_spaces == 1:
+                block_potential += 10
+        
+        return block_potential
+
+    def prevent_opponent_squares(self, game: tekko.TekkoGame, player, opponent):
+        prevention_score = 0
+        board = game.get_board()
+        rows, cols = game.get_rows(), game.get_columns()
+
+        for row in range(rows - 1):
+            for col in range(cols - 1):
+                # Détecte un carré potentiel de l'adversaire
+                opponent_square_potential = self.detect_potential_square(game, row, col, opponent)
+                
+                # Bonus pour bloquer les carrés potentiels de l'adversaire
+                if opponent_square_potential:
+                    prevention_score += 15
+        
+        return prevention_score
+
+    def detect_potential_square(self, game, row, col, opponent):
+        board = game.get_board()
+        
+        # Compte les pièces de l'adversaire dans le carré potentiel
+        square_pieces = sum([
+            board[row][col] == opponent,
+            board[row][col + 1] == opponent,
+            board[row + 1][col] == opponent,
+            board[row + 1][col + 1] == opponent
+        ])
+        
+        # Retourne True si 3 des 4 cases sont occupées par l'adversaire
+        return square_pieces >= 3
+
+    def evaluate_connectivity(self, game: tekko.TekkoGame, player):
+        connectivity_score = 0
+        board = game.get_board()
+        
+        # Bonus pour les groupes de pièces connectées
+        connectivity_score += self.count_connected_groups(game, player)
+        
+        return connectivity_score
+
+    def count_connected_groups(self, game: tekko.TekkoGame, player):
+        board = game.get_board()
+        visited = set()
+        groups = 0
+
+        def dfs(row, col):
+            if (row, col) in visited or board[row][col] != player:
+                return 0
+            
+            visited.add((row, col))
+            group_size = 1
+            
+            # Directions de vérification (8 directions)
+            directions = [
+                (-1, 0), (1, 0), (0, -1), (0, 1), 
+                (-1, -1), (-1, 1), (1, -1), (1, 1)
+            ]
+            
+            for dr, dc in directions:
+                new_row, new_col = row + dr, col + dc
+                if (0 <= new_row < game.get_rows() and 
+                    0 <= new_col < game.get_columns()):
+                    group_size += dfs(new_row, new_col)
+            
+            return group_size
+
+        for row in range(game.get_rows()):
+            for col in range(game.get_columns()):
+                if board[row][col] == player and (row, col) not in visited:
+                    group_size = dfs(row, col)
+                    if group_size > 1:
+                        groups += group_size
+        
+        return groups
+
