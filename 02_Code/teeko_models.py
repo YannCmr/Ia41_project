@@ -1,25 +1,26 @@
 """
-This file contains the Tkinter classes for the Tekko game. It primarily displays the game state.
+This file contains the Tkinter classes for the Teeko game. It primarily displays the game state.
 
-    Includes: GameBoard, Player, Score, Turn, and OptionDialog classes.
+    Includes: GameBoard, Player, Turn, and OptionDialog classes.
 """
 
 import os.path
-import tekko  # Linking with tekko.py game logic
+import teeko  # Linking with teeko.py game logic
 import tkinter
 import glob
 import time
 
 # GUI / Tkinter object constants
 BACKGROUND_COLOR = '#FFFFFF'
-GAME_COLOR = '#003366'  # Set to a blue-like color for Tekko
+GAME_COLOR =  '#D2B48C' 
+PLACE_COLOR = '#8B4513'
 FONT = ('Helvetica', 30)
 DIALOG_FONT = ('Helvetica', 20)
-PLAYERS = {tekko.BLACK: 'Black', tekko.WHITE: 'White'}
+PLAYERS = {teeko.BLACK: 'Black', teeko.WHITE: 'White'}
 
 
 class GameBoard:
-    def __init__(self, game_state: tekko.TekkoGame, game_width: float, game_height: float, root_window) -> None:
+    def __init__(self, game_state: teeko.TeekoGame, game_width: float, game_height: float, root_window) -> None:
         """ Initialize the game board's settings """
         self._game_state = game_state
         self._rows = self._game_state.get_rows()
@@ -35,8 +36,80 @@ class GameBoard:
     def redraw_board(self) -> None:
         """ Redraws the board """
         self._board.delete(tkinter.ALL)
-        self._redraw_lines()
+        self._redraw_grid_with_connections()  # Draw grid with all connections
         self._redraw_cells()
+
+    def _redraw_grid_with_connections(self) -> None:
+        """ Draws a grid with dark brown connections (horizontal, vertical, diagonal) """
+        cell_width = self.get_cell_width()
+        cell_height = self.get_cell_height()
+        grid_color = GAME_COLOR
+
+        # Draw lines for connections
+        for row in range(self._rows):
+            for col in range(self._cols):
+                x_center = col * cell_width + cell_width / 2
+                y_center = row * cell_height + cell_height / 2
+
+                # Horizontal connections
+                if col < self._cols - 1:
+                    self._board.create_line(
+                        x_center, y_center,
+                        x_center + cell_width, y_center,
+                        fill=PLACE_COLOR, width=3
+                    )
+                # Vertical connections
+                if row < self._rows - 1:
+                    self._board.create_line(
+                        x_center, y_center,
+                        x_center, y_center + cell_height,
+                        fill=PLACE_COLOR, width=3
+                    )
+                # Diagonal (top-left to bottom-right)
+                if row < self._rows - 1 and col < self._cols - 1:
+                    self._board.create_line(
+                        x_center, y_center,
+                        x_center + cell_width, y_center + cell_height,
+                        fill=PLACE_COLOR, width=3
+                    )
+                # Diagonal (top-right to bottom-left)
+                if row < self._rows - 1 and col > 0:
+                    self._board.create_line(
+                        x_center, y_center,
+                        x_center - cell_width, y_center + cell_height,
+                        fill=PLACE_COLOR, width=3
+                    )
+
+                # Draw circle for the grid nodes
+                radius = min(cell_width, cell_height) / 6
+                self._board.create_oval(
+                    x_center - radius, y_center - radius,
+                    x_center + radius, y_center + radius,
+                    outline="black", width=2, fill=PLACE_COLOR 
+                )
+
+    def _redraw_cells(self) -> None:
+        """ Draws all placed pieces on the board """
+        for row in range(self._rows):
+            for col in range(self._cols):
+                if self._game_state.get_board()[row][col] != teeko.NONE:
+                    self._draw_piece(row, col)
+
+    def _draw_piece(self, row: int, col: int) -> None:
+        """ Draws a red or black piece at the specified cell location """
+        cell_width = self.get_cell_width()
+        cell_height = self.get_cell_height()
+        x_center = col * cell_width + cell_width / 2
+        y_center = row * cell_height + cell_height / 2
+        radius = min(cell_width, cell_height) / 4 # Size of the piece
+
+        color = "black" if self._game_state.get_board()[row][col] == teeko.BLACK else "white"
+        self._board.create_oval(
+            x_center - radius, y_center - radius,
+            x_center + radius, y_center + radius,
+            fill=color, outline="black", width=2
+        )
+
 
     def _redraw_lines(self) -> None:
         """ Draws grid lines for the board """
@@ -48,12 +121,7 @@ class GameBoard:
         for col in range(1, self._cols):
             self._board.create_line(col * col_multiplier, 0, col * col_multiplier, self.get_board_height())
 
-    def _redraw_cells(self) -> None:
-        """ Draws all placed pieces on the board """
-        for row in range(self._rows):
-            for col in range(self._cols):
-                if self._game_state.get_board()[row][col] != tekko.NONE:
-                    self._draw_cell(row, col)
+
 
     def _draw_cell(self, row: int, col: int) -> None:
         """ Draws a piece at the specified cell location """
@@ -63,7 +131,7 @@ class GameBoard:
                                 (row + 1) * self.get_cell_height(),
                                 fill=PLAYERS[self._game_state.get_board()[row][col]])
 
-    def update_game_state(self, game_state: tekko.TekkoGame) -> None:
+    def update_game_state(self, game_state: teeko.TeekoGame) -> None:
         """ Updates the game board's state """
         self._game_state = game_state
 
@@ -121,41 +189,8 @@ class Player:
         self._player_label['text'] = self._name
 
 
-class Score:
-    def __init__(self, color: str, game_state: tekko.TekkoGame, root_window) -> None:
-        """ Initializes the score label """
-        self._player = color
-        self._score = game_state.get_scores(self._player)
-        self._score_label = tkinter.Label(master=root_window,
-                                          text=self._score_text(),
-                                          background=BACKGROUND_COLOR,
-                                          fg="Black",
-                                          font=FONT)
-
-    def update_score(self, game_state: tekko.TekkoGame) -> None:
-        """ Updates the score with the specified game state """
-        self._score = game_state.get_scores(self._player)
-        self._change_score_text()
-
-    def get_score_label(self) -> tkinter.Label:
-        """ Returns the score label """
-        return self._score_label
-
-    def get_scores(self) -> int:
-        """ Returns the score """
-        return self._score
-
-    def _change_score_text(self) -> None:
-        """ Changes the score label's text """
-        self._score_label['text'] = self._score_text()
-
-    def _score_text(self) -> str:
-        """ Returns the score in text string format """
-        return PLAYERS[self._player] + ' - ' + str(self._score)
-
-
 class Turn:
-    def __init__(self, game_state: tekko.TekkoGame, root_window) -> None:
+    def __init__(self, game_state: teeko.TeekoGame, root_window) -> None:
         """ Initializes the player's turn label """
         self._player = game_state.get_turn()
         self._timer = time.time()  # Playing time for the current move
@@ -176,7 +211,7 @@ class Turn:
             victory_text += f'\n Players Time (B|W): {int(self._total_time_BLACK)}s|{int(self._total_time_WHITE)}s'
         self._turn_label['text'] = victory_text
 
-    def switch_turn(self, game_state: tekko.TekkoGame) -> None:
+    def switch_turn(self, game_state: teeko.TeekoGame) -> None:
         """ Switches the turn between players """
         self._player = game_state.get_turn()
         self.update_turn(self._player)
@@ -192,18 +227,18 @@ class Turn:
 
     def update_turn(self, turn: str) -> None:
         """ Updates the turn to the current game state's turn """
-        self._player = turn
         self.update_turn_text()
+        self._player = turn
         self._restart_timer()
 
     def _turn_text(self) -> str:
         """ Returns the turn text """
-        time_elapsed = self._total_time_BLACK if self._player == tekko.BLACK else self._total_time_WHITE
+        time_elapsed = self._total_time_BLACK if self._player == teeko.BLACK else self._total_time_WHITE
         return PLAYERS[self._player] + f"'s turn [{int(time_elapsed)}s]"
 
     def _opposite_turn(self) -> str:
         """ Returns the opposite turn """
-        return {tekko.BLACK: tekko.WHITE, tekko.WHITE: tekko.BLACK}[self._player]
+        return {teeko.BLACK: teeko.WHITE, teeko.WHITE: teeko.BLACK}[self._player]
 
     def _restart_timer(self):
         self._timer = time.time()
@@ -215,15 +250,21 @@ class Turn:
 
     def _get_elapsed_time(self) -> float:
         return time.time() - self._timer
-
+    
     def _update_total_time(self):
         elapsed = self._get_elapsed_time()
-        if self._player == tekko.BLACK:
+        if self._player == teeko.BLACK:
             self._total_time_BLACK += elapsed
-        elif self._player == tekko.WHITE:
+        elif self._player == teeko.WHITE:
             self._total_time_WHITE += elapsed
         self._restart_timer()
 
+    def add_time_to_player(self, player, additional_time):
+        """Manually add time to a specific player."""
+        if player == teeko.BLACK:
+            self._total_time_BLACK += additional_time
+        elif player == teeko.WHITE:
+            self._total_time_WHITE += additional_time
 
 # OptionDialog for configuring game settings
 class OptionDialog:
