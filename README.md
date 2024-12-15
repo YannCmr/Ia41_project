@@ -30,9 +30,9 @@ réalise une configuration gagnante, la partie s'arrête.
     ├── 02_Code/   
     │   ├── ai/                 <- Folder with the AI code
     │   └── __pycache__/
-    │   ├── tekko_gui.py        <- File with the GUI code
-    │   ├── tekko_models.py     <- File with the game logic
-    │   └── tekko.py            <- File with the game logic
+    │   ├── teeko_gui.py        <- File with the GUI code
+    │   ├── teeko_models.py     <- File with the game logic
+    │   └── teeko.py            <- File with the game logic
     ├── images/                 <- Folder with the images used in the README
     ├── requirements.txt        <- File with the python librairies used to run the code
     ├── .gitignore
@@ -89,7 +89,7 @@ cd 02_Code
 
 Puis lancer le jeu :
 ```bash
-python tekko_gui.py
+python teeko_gui.py
 ```
 
 ## Lancer le jeu avec l'IA
@@ -97,7 +97,7 @@ Commencer par déposer l'IA dans le dossier "02_Code/ai" :
 
 Puis lancer le jeu :
 ```bash
-python tekko_gui.py
+python teeko_gui.py
 ```
 
 Aller dans "Game" -> "Game Settings" et choisir l'IA/le joueur dans le menu déroulant.  

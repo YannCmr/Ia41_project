@@ -2,7 +2,7 @@ import math
 import teeko
 
 class MiniMax_Facile:
-    def __init__(self, depth=3):
+    def __init__(self, depth=4):
         self.depth = depth
 
     def next_move(self, board: teeko.TeekoGame) -> tuple[int, int, int, int]:

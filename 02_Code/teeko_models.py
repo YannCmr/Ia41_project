@@ -227,8 +227,8 @@ class Turn:
 
     def update_turn(self, turn: str) -> None:
         """ Updates the turn to the current game state's turn """
-        self._player = turn
         self.update_turn_text()
+        self._player = turn
         self._restart_timer()
 
     def _turn_text(self) -> str:
@@ -250,7 +250,7 @@ class Turn:
 
     def _get_elapsed_time(self) -> float:
         return time.time() - self._timer
-
+    
     def _update_total_time(self):
         elapsed = self._get_elapsed_time()
         if self._player == teeko.BLACK:
@@ -259,6 +259,12 @@ class Turn:
             self._total_time_WHITE += elapsed
         self._restart_timer()
 
+    def add_time_to_player(self, player, additional_time):
+        """Manually add time to a specific player."""
+        if player == teeko.BLACK:
+            self._total_time_BLACK += additional_time
+        elif player == teeko.WHITE:
+            self._total_time_WHITE += additional_time
 
 # OptionDialog for configuring game settings
 class OptionDialog:

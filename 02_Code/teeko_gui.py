@@ -4,6 +4,7 @@ import importlib
 import teeko  
 import teeko_models 
 import tkinter
+import time
 
 # Update GUI constants for Teeko, if any changes required
 GAME_HEIGHT = 400
@@ -297,14 +298,22 @@ class TeekoGUI:
         Function to play the AI move based on the current turn.
         """
         current_turn = self._game_state.get_turn()
+        ai_start_time = time.time()
+
         if current_turn == teeko.BLACK and self._black_ai is not None:
             move = self._black_ai.next_move(self._game_state.copy_game())
+            ai_elapsed_time = time.time() - ai_start_time 
+            self._player_turn.add_time_to_player(teeko.BLACK, ai_elapsed_time)
+            self._player_turn.add_time_to_player(teeko.WHITE, -ai_elapsed_time)   #Because of a bug in the timer when the IA is playing, this time is add to the player not the IA
             self._play(move[0], move[1], move[2], move[3])
             self._board.redraw_board() 
         elif current_turn == teeko.WHITE and self._white_ai is not None:
             move = self._white_ai.next_move(self._game_state.copy_game())
+            ai_elapsed_time = time.time() - ai_start_time 
+            self._player_turn.add_time_to_player(teeko.WHITE, ai_elapsed_time)
+            self._player_turn.add_time_to_player(teeko.BLACK, -ai_elapsed_time)#Because of a bug in the timer when the IA is playing, this time is add to the player not the IA
             self._play(move[0], move[1], move[2], move[3])
-            self._board.redraw_board() 
+            self._board.redraw_board()
 
 if __name__ == "__main__":
     TeekoGUI().start()
