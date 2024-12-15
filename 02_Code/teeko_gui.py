@@ -1,11 +1,11 @@
-# Tekko specific GUI adjustments based on Othello's interface
+# Teeko specific GUI adjustments based on Othello's interface
 
 import importlib
-import tekko  
-import tekko_models 
+import teeko  
+import teeko_models 
 import tkinter
 
-# Update GUI constants for Tekko, if any changes required
+# Update GUI constants for Teeko, if any changes required
 GAME_HEIGHT = 400
 GAME_WIDTH = 400
 WAITING_TIME = 500
@@ -13,7 +13,7 @@ DEFAULT_ROWS = 5
 DEFAULT_COLUMNS = 5
 
 
-class TekkoGUI:
+class TeekoGUI:
     def __init__(self, black_name="Human", white_name="Human"):
         # Initial Game Settings
         self._rows = DEFAULT_ROWS
@@ -25,24 +25,24 @@ class TekkoGUI:
 
         self._selected_piece = None  # Initialize selected piece tracking
 
-        # Initialize TekkoGame with an empty board for Tekko
-        self._game_state = tekko.TekkoGame(self._rows, self._columns, tekko.BLACK)
+        # Initialize TeekoGame with an empty board for Teeko
+        self._game_state = teeko.TeekoGame(self._rows, self._columns, teeko.BLACK)
 
         # Set up GUI elements
         self._root_window = tkinter.Tk()
-        self._root_window.configure(background=tekko_models.BACKGROUND_COLOR)
-        self._black_player = tekko_models.Player(self._black_name, self._root_window)
-        self._white_player = tekko_models.Player(self._white_name, self._root_window)
-        self._board = tekko_models.GameBoard(
+        self._root_window.configure(background=teeko_models.BACKGROUND_COLOR)
+        self._black_player = teeko_models.Player(self._black_name, self._root_window)
+        self._white_player = teeko_models.Player(self._white_name, self._root_window)
+        self._board = teeko_models.GameBoard(
             self._game_state, GAME_WIDTH, GAME_HEIGHT, self._root_window
         )
-        self._black_score = tekko_models.Score(
-            tekko.BLACK, self._game_state, self._root_window
-        )
-        self._white_score = tekko_models.Score(
-            tekko.WHITE, self._game_state, self._root_window
-        )
-        self._player_turn = tekko_models.Turn(self._game_state, self._root_window)
+        # self._black_score = teeko_models.Score(
+        #     teeko.BLACK, self._game_state, self._root_window
+        # )
+        # self._white_score = teeko_models.Score(
+        #     teeko.WHITE, self._game_state, self._root_window
+        # )
+        self._player_turn = teeko_models.Turn(self._game_state, self._root_window)
 
         # for highlighting moves and the current selected piece
         self._selected_piece = None  # Tracks the currently selected piece
@@ -68,8 +68,8 @@ class TekkoGUI:
         self._root_window.config(menu=self._menu_bar)
         self._black_player.get_player_label().grid(row=0, column=0, sticky=tkinter.S)
         self._white_player.get_player_label().grid(row=0, column=1, sticky=tkinter.S)
-        self._black_score.get_score_label().grid(row=1, column=0, sticky=tkinter.S)
-        self._white_score.get_score_label().grid(row=1, column=1, sticky=tkinter.S)
+        # self._black_score.get_score_label().grid(row=1, column=0, sticky=tkinter.S)
+        # self._white_score.get_score_label().grid(row=1, column=1, sticky=tkinter.S)
         self._board.get_board().grid(
             row=2,
             column=0,
@@ -100,17 +100,20 @@ class TekkoGUI:
 
 
     def highlight_piece(self, row, col):
-        """Draw a yellow outline around the selected piece."""
+        """Highlight the selected piece with a yellow border."""
         cell_width = self._board.get_cell_width()
         cell_height = self._board.get_cell_height()
-        x1, y1 = col * cell_width, row * cell_height
-        x2, y2 = x1 + cell_width, y1 + cell_height
-        self._board.get_board().create_rectangle(
-            x1, y1, x2, y2, outline="yellow", width=3
+        x_center = col * cell_width + cell_width / 2
+        y_center = row * cell_height + cell_height / 2
+        radius = min(cell_width, cell_height) / 3
+        self._board.get_board().create_oval(
+            x_center - radius, y_center - radius,
+            x_center + radius, y_center + radius,
+            outline="yellow", width=4
         )
 
     def highlight_available_moves(self, moves):
-        """Draw light green circles on available adjacent cells."""
+        """Highlight available moves with green circles."""
         cell_width = self._board.get_cell_width()
         cell_height = self._board.get_cell_height()
         for row, col in moves:
@@ -120,7 +123,7 @@ class TekkoGUI:
             self._board.get_board().create_oval(
                 x_center - radius, y_center - radius,
                 x_center + radius, y_center + radius,
-                outline="", fill="lightgreen"
+                fill="lightgreen", outline=""
             )
 
     def clear_highlights(self):
@@ -140,7 +143,7 @@ class TekkoGUI:
 
     def _configure_game_settings(self) -> None:
         """Game settings configuration window"""
-        dialog = tekko_models.OptionDialog(
+        dialog = teeko_models.OptionDialog(
             self._rows, self._columns, self._black_name, self._white_name
         )
         dialog.show()
@@ -155,17 +158,17 @@ class TekkoGUI:
 
     def _new_game(self) -> None:
         """Initialize a new game with empty board and free placement"""
-        self._game_state = tekko.TekkoGame(self._rows, self._columns, tekko.BLACK)
+        self._game_state = teeko.TeekoGame(self._rows, self._columns, teeko.BLACK)
         self._board.new_game_settings(self._game_state)
         self._board.redraw_board()
         self._player_turn.reset_total_times()
         self._black_player.update_name(self._black_name)
         self._white_player.update_name(self._white_name)
-        self._black_score.update_score(self._game_state)
-        self._white_score.update_score(self._game_state)
+        # self._black_score.update_score(self._game_state)
+        # self._white_score.update_score(self._game_state)
 
         # Set initial player turn to BLACK and reset any timers
-        self._player_turn.update_turn(tekko.BLACK)
+        self._player_turn.update_turn(teeko.BLACK)
 
         [self._root_window.after_cancel(idx) for idx in self.cb_timer_idx]
         self.cb_timer_idx = []
@@ -200,7 +203,7 @@ class TekkoGUI:
                     # Move to the selected available cell
                     try:
                         self._play(*self._selected_piece, row, col)  # Use _play to handle the move
-                    except tekko.InvalidMoveException as e:
+                    except teeko.InvalidMoveException as e:
                         self.show_message(str(e))
                     self._selected_piece = None  # Clear selection after move
                     return
@@ -226,7 +229,7 @@ class TekkoGUI:
             # If still in placement phase, handle placement instead
             try:
                 self._play(row, col)
-            except tekko.InvalidMoveException as e:
+            except teeko.InvalidMoveException as e:
                 self.show_message(str(e))
 
 
@@ -246,7 +249,7 @@ class TekkoGUI:
         available_moves = []
         for drow, dcol in directions:
             new_row, new_col = row + drow, col + dcol
-            if self._game_state._is_valid_cell(new_row, new_col) and self._game_state.get_board()[new_row][new_col] == tekko.NONE:
+            if self._game_state._is_valid_cell(new_row, new_col) and self._game_state.get_board()[new_row][new_col] == teeko.NONE:
                 available_moves.append((new_row, new_col))
         return available_moves
 
@@ -261,7 +264,7 @@ class TekkoGUI:
             new_col (int): Column of the destination cell for movement phase.
 
         Raises:
-            tekko.InvalidMoveException: If the move is invalid.
+            teeko.InvalidMoveException: If the move is invalid.
         """
         try:
             if new_row is None and new_col is None:
@@ -276,8 +279,8 @@ class TekkoGUI:
             #  Update the game state and redraw the board
             self._board.update_game_state(self._game_state)
             self._board.redraw_board()
-            self._black_score.update_score(self._game_state)
-            self._white_score.update_score(self._game_state)
+            # self._black_score.update_score(self._game_state)
+            # self._white_score.update_score(self._game_state)
 
             if self._game_state.is_game_over():
                 self._player_turn.display_winner(self._game_state.return_winner())
@@ -287,9 +290,9 @@ class TekkoGUI:
                 self._player_turn.switch_turn(self._game_state)
                 self._root_window.after(WAITING_TIME, self._play_ai)
 
-        except tekko.InvalidMoveException as e:
+        except teeko.InvalidMoveException as e:
             self.show_message(str(e))
-        except tekko.InvalidTypeException as e:
+        except teeko.InvalidTypeException as e:
             self.show_message(str(e))
 
     def _convert_point_coord_to_move(self, pointx: int, pointy: int):
@@ -305,14 +308,14 @@ class TekkoGUI:
         Function to play the AI move based on the current turn.
         """
         current_turn = self._game_state.get_turn()
-        if current_turn == tekko.BLACK and self._black_ai is not None:
+        if current_turn == teeko.BLACK and self._black_ai is not None:
             move = self._black_ai.next_move(self._game_state.copy_game())
             self._play(move[0], move[1], move[2], move[3])
             self._board.redraw_board() 
-        elif current_turn == tekko.WHITE and self._white_ai is not None:
+        elif current_turn == teeko.WHITE and self._white_ai is not None:
             move = self._white_ai.next_move(self._game_state.copy_game())
             self._play(move[0], move[1], move[2], move[3])
             self._board.redraw_board() 
 
 if __name__ == "__main__":
-    TekkoGUI().start()
+    TeekoGUI().start()
