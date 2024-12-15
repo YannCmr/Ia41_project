@@ -1,5 +1,5 @@
 """
-This file contains the Tekko game logic, modified according to the new game rules.
+This file contains the Teeko game logic, modified according to the new game rules.
 """
 
 import copy
@@ -21,9 +21,9 @@ class InvalidTypeException(Exception):
     pass
 
 
-class TekkoGame:
+class TeekoGame:
     """
-    Class that creates the Tekko game and manages all game logic.
+    Class that creates the Teeko game and manages all game logic.
     """
 
     def __init__(self, rows=BOARD_SIZE, cols=BOARD_SIZE, turn=BLACK):
@@ -185,15 +185,11 @@ class TekkoGame:
     def _is_valid_cell(self, row, col):
         """ Checks if a cell position is within the board's boundaries. """
         return 0 <= row < self.rows and 0 <= col < self.cols
-    
-    def get_scores(self, player):
-        """Calculates the score for the specified player."""
-        return sum(row.count(player) for row in self.current_board)
-    
+
 
     def copy_game(self):
         """Creates a deep copy of the current game state."""
-        new_game = TekkoGame(self.rows, self.cols, self.turn)
+        new_game = TeekoGame(self.rows, self.cols, self.turn)
         new_game.current_board = [row[:] for row in self.current_board]
         new_game.black_pieces = self.black_pieces
         new_game.white_pieces = self.white_pieces

@@ -1,16 +1,16 @@
 import math
-import tekko
+import teeko
 
 class AlphaBetaYann:
     def __init__(self, depth=4):
         self.depth = depth
 
-    def next_move(self, board: tekko.TekkoGame) -> tuple[int, int, int, int]:
+    def next_move(self, board: teeko.TeekoGame) -> tuple[int, int, int, int]:
         """
         Determines the next move for the AI using Alpha-Beta pruning.
 
         Args:
-            board (tekko.TekkoGame): Current game state.
+            board (teeko.TeekoGame): Current game state.
 
         Returns:
             tuple[int, int, int, int]: The next move (row, col, new_row, new_col) or
@@ -19,12 +19,12 @@ class AlphaBetaYann:
         _, move = self.alpha_beta(board, self.depth, float('-inf'), float('inf'), True)
         return move
 
-    def alpha_beta(self, game: tekko.TekkoGame, depth: int, alpha: float, beta: float, is_maximizing: bool):
+    def alpha_beta(self, game: teeko.TeekoGame, depth: int, alpha: float, beta: float, is_maximizing: bool):
         """
         Alpha-Beta pruning algorithm.
 
         Args:
-            game (tekko.TekkoGame): Current game state.
+            game (teeko.TeekoGame): Current game state.
             depth (int): Remaining depth to evaluate.
             alpha (float): Best value for the maximizing player.
             beta (float): Best value for the minimizing player.
@@ -74,7 +74,7 @@ class AlphaBetaYann:
         Generates all possible moves for the current player.
 
         Args:
-            game (tekko.TekkoGame): Current game state.
+            game (teeko.TeekoGame): Current game state.
 
         Returns:
             list[tuple[int, int, int, int]]: List of moves. Each move is
@@ -86,28 +86,28 @@ class AlphaBetaYann:
         if game.placement_phase:
             for row in range(game.get_rows()):
                 for col in range(game.get_columns()):
-                    if board[row][col] == tekko.NONE:
+                    if board[row][col] == teeko.NONE:
                         possible_moves.append((row, col, None, None))
         else:
             for row in range(game.get_rows()):
                 for col in range(game.get_columns()):
                     if board[row][col] == game.get_turn():
                         for new_row, new_col in self.get_adjacent_cells(game, row, col):
-                            if board[new_row][new_col] == tekko.NONE:
+                            if board[new_row][new_col] == teeko.NONE:
                                 possible_moves.append((row, col, new_row, new_col))
         return possible_moves
 
-    def get_adjacent_cells(self, game: tekko.TekkoGame, row, col):
+    def get_adjacent_cells(self, game: teeko.TeekoGame, row, col):
         """Returns a list of adjacent cells for movement."""
         directions = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
         adjacent_cells = []
         for drow, dcol in directions:
             new_row, new_col = row + drow, col + dcol
-            if game._is_valid_cell(new_row, new_col) and game.get_board()[new_row][new_col] == tekko.NONE:
+            if game._is_valid_cell(new_row, new_col) and game.get_board()[new_row][new_col] == teeko.NONE:
                 adjacent_cells.append((new_row, new_col))
         return adjacent_cells
 
-    def apply_move(self, game: tekko.TekkoGame, move):
+    def apply_move(self, game: teeko.TeekoGame, move):
         """Applies a move to the game state."""
         row, col, new_row, new_col = move
         if new_row is None and new_col is None:
@@ -115,21 +115,19 @@ class AlphaBetaYann:
         else:
             game.move(row, col, new_row, new_col)
 
-    def evaluate_board(self, game: tekko.TekkoGame):
+    def evaluate_board(self, game: teeko.TeekoGame):
         """
         Evaluates the board state for the current player.
 
         Args:
-            game (tekko.TekkoGame): Current game state.
+            game (teeko.TeekoGame): Current game state.
 
         Returns:
             int: Evaluation score.
         """
         current_player = game.get_turn()
-        opponent = tekko.BLACK if current_player == tekko.WHITE else tekko.WHITE
+        opponent = teeko.BLACK if current_player == teeko.WHITE else teeko.WHITE
 
-        # Base score: difference in the number of pieces
-        base_score = game.get_scores(current_player) - game.get_scores(opponent)
 
         # Control the board: reward central positions
         central_control = self.evaluate_central_control(game, current_player)
@@ -142,7 +140,6 @@ class AlphaBetaYann:
 
         # Combine all heuristics
         total_score = (
-            base_score +
             2 * central_control +  # Higher weight for strategic positions
             5.5 * mobility_score +  # Balance mobility and central control
             15 * near_victory_score  # Strongly favor near-victory conditions
@@ -154,7 +151,7 @@ class AlphaBetaYann:
         Evaluate how well the player controls the central part of the board.
 
         Args:
-            game (tekko.TekkoGame): Current game state.
+            game (teeko.TeekoGame): Current game state.
             player (str): Current player ('B' or 'W').
 
         Returns:
@@ -177,7 +174,7 @@ class AlphaBetaYann:
         Evaluate the mobility of the player (number of possible moves).
 
         Args:
-            game (tekko.TekkoGame): Current game state.
+            game (teeko.TeekoGame): Current game state.
             player (str): Current player ('B' or 'W').
 
         Returns:
@@ -190,7 +187,7 @@ class AlphaBetaYann:
                 if board[row][col] == player:
                     # Count all valid moves for this piece
                     for new_row, new_col in self.get_adjacent_cells(game, row, col):
-                        if board[new_row][new_col] == tekko.NONE:
+                        if board[new_row][new_col] == teeko.NONE:
                             possible_moves += 1
         return possible_moves
 
@@ -199,7 +196,7 @@ class AlphaBetaYann:
         Evaluate how close the player is to winning.
 
         Args:
-            game (tekko.TekkoGame): Current game state.
+            game (teeko.TeekoGame): Current game state.
             player (str): Current player ('B' or 'W').
 
         Returns:
@@ -222,7 +219,7 @@ class AlphaBetaYann:
         Checks for 2x2 squares of the player's pieces.
 
         Args:
-            game (tekko.TekkoGame): Current game state.
+            game (teeko.TeekoGame): Current game state.
             player (str): Current player ('B' or 'W').
 
         Returns:
@@ -248,7 +245,7 @@ class AlphaBetaYann:
         Checks if the player is close to winning from a given position.
 
         Args:
-            game (tekko.TekkoGame): Current game state.
+            game (teeko.TeekoGame): Current game state.
             row (int): Row index.
             col (int): Column index.
             player (str): Current player ('B' or 'W').
@@ -268,7 +265,7 @@ class AlphaBetaYann:
                 if 0 <= r < game.get_rows() and 0 <= c < game.get_columns():
                     if board[r][c] == player:
                         line_pieces += 1
-                    elif board[r][c] == tekko.NONE:
+                    elif board[r][c] == teeko.NONE:
                         empty_spaces += 1
                 else:
                     break
