@@ -185,11 +185,7 @@ class TeekoGame:
     def _is_valid_cell(self, row, col):
         """ Checks if a cell position is within the board's boundaries. """
         return 0 <= row < self.rows and 0 <= col < self.cols
-    
-    def get_scores(self, player):
-        """Calculates the score for the specified player."""
-        return sum(row.count(player) for row in self.current_board)
-    
+
 
     def copy_game(self):
         """Creates a deep copy of the current game state."""

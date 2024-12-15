@@ -1,7 +1,7 @@
 """
 This file contains the Tkinter classes for the Teeko game. It primarily displays the game state.
 
-    Includes: GameBoard, Player, Score, Turn, and OptionDialog classes.
+    Includes: GameBoard, Player, Turn, and OptionDialog classes.
 """
 
 import os.path
@@ -187,39 +187,6 @@ class Player:
     def _change_player_name_label(self) -> None:
         """ Updates the player label text """
         self._player_label['text'] = self._name
-
-
-class Score:
-    def __init__(self, color: str, game_state: teeko.TeekoGame, root_window) -> None:
-        """ Initializes the score label """
-        self._player = color
-        self._score = game_state.get_scores(self._player)
-        self._score_label = tkinter.Label(master=root_window,
-                                          text=self._score_text(),
-                                          background=BACKGROUND_COLOR,
-                                          fg="Black",
-                                          font=FONT)
-
-    def update_score(self, game_state: teeko.TeekoGame) -> None:
-        """ Updates the score with the specified game state """
-        self._score = game_state.get_scores(self._player)
-        self._change_score_text()
-
-    def get_score_label(self) -> tkinter.Label:
-        """ Returns the score label """
-        return self._score_label
-
-    def get_scores(self) -> int:
-        """ Returns the score """
-        return self._score
-
-    def _change_score_text(self) -> None:
-        """ Changes the score label's text """
-        self._score_label['text'] = self._score_text()
-
-    def _score_text(self) -> str:
-        """ Returns the score in text string format """
-        return PLAYERS[self._player] + ' - ' + str(self._score)
 
 
 class Turn:

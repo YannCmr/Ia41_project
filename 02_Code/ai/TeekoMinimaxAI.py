@@ -105,9 +105,6 @@ class TeekoMinimaxAI:
         current_player = game.get_turn()
         opponent = teeko.BLACK if current_player == teeko.WHITE else teeko.WHITE
 
-        # Base score: difference in the number of pieces
-        base_score = game.get_scores(current_player) - game.get_scores(opponent)
-
         # Control the board: reward central positions
         central_control = self.evaluate_central_control(game, current_player)
 
@@ -119,7 +116,6 @@ class TeekoMinimaxAI:
 
         # Combine all heuristics
         total_score = (
-            base_score +
             15 * central_control +  # Higher weight for strategic positions
             1.5 * mobility_score +  # Balance mobility and central control
             5 * near_victory_score  # Strongly favor near-victory conditions

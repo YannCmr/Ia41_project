@@ -36,12 +36,7 @@ class TeekoGUI:
         self._board = teeko_models.GameBoard(
             self._game_state, GAME_WIDTH, GAME_HEIGHT, self._root_window
         )
-        # self._black_score = teeko_models.Score(
-        #     teeko.BLACK, self._game_state, self._root_window
-        # )
-        # self._white_score = teeko_models.Score(
-        #     teeko.WHITE, self._game_state, self._root_window
-        # )
+
         self._player_turn = teeko_models.Turn(self._game_state, self._root_window)
 
         # for highlighting moves and the current selected piece
@@ -68,8 +63,6 @@ class TeekoGUI:
         self._root_window.config(menu=self._menu_bar)
         self._black_player.get_player_label().grid(row=0, column=0, sticky=tkinter.S)
         self._white_player.get_player_label().grid(row=0, column=1, sticky=tkinter.S)
-        # self._black_score.get_score_label().grid(row=1, column=0, sticky=tkinter.S)
-        # self._white_score.get_score_label().grid(row=1, column=1, sticky=tkinter.S)
         self._board.get_board().grid(
             row=2,
             column=0,
@@ -164,8 +157,6 @@ class TeekoGUI:
         self._player_turn.reset_total_times()
         self._black_player.update_name(self._black_name)
         self._white_player.update_name(self._white_name)
-        # self._black_score.update_score(self._game_state)
-        # self._white_score.update_score(self._game_state)
 
         # Set initial player turn to BLACK and reset any timers
         self._player_turn.update_turn(teeko.BLACK)
@@ -279,8 +270,6 @@ class TeekoGUI:
             #  Update the game state and redraw the board
             self._board.update_game_state(self._game_state)
             self._board.redraw_board()
-            # self._black_score.update_score(self._game_state)
-            # self._white_score.update_score(self._game_state)
 
             if self._game_state.is_game_over():
                 self._player_turn.display_winner(self._game_state.return_winner())
