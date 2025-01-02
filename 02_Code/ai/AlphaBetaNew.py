@@ -142,11 +142,13 @@ class AlphaBetaNew:
         central_control = self.evaluate_central_control(game, current_player)
         mobility_score = self.evaluate_mobility(game, current_player) - self.evaluate_mobility(game, opponent)
         near_victory_score = self.evaluate_near_victory(game, current_player)
+        block_opponent_score = self.evaluate_block_opponent(game, opponent)
 
         total_score = (
             3 * central_control +
             5 * mobility_score +
-            15 * near_victory_score
+            15 * near_victory_score +
+            10 * block_opponent_score
         )
         return total_score
 
@@ -207,6 +209,24 @@ class AlphaBetaNew:
             for col in range(game.get_columns())
             if game.get_board()[row][col] == player
         )
+
+    def evaluate_block_opponent(self, game, opponent):
+        """
+        Evaluates the ability to block the opponent's potential winning moves.
+
+        Args:
+            game (teeko.TeekoGame): The current game state.
+            opponent (str): The opponent player.
+
+        Returns:
+            int: Blocking score.
+        """
+        return sum(
+            self.check_line_victory(game, opponent, row, col)
+            for row in range(game.get_rows())
+            for col in range(game.get_columns())
+            if game.get_board()[row][col] == opponent
+        ) * -1  # Negative score to penalize opponent's near victories
 
     def check_line_victory(self, game, player, row, col):
         """
