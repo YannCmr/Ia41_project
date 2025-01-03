@@ -1,7 +1,7 @@
 
 from .BaseIA import BaseAI
 import teeko
-
+from abc import ABC, abstractmethod
 class AlphaBeta(BaseAI):
     def alpha_beta(self, game: teeko.TeekoGame, depth: int, alpha: float, beta: float, is_maximizing: bool):
         """
@@ -74,3 +74,16 @@ class AlphaBeta(BaseAI):
                 game.move(row, col)
             else:
                 game.move(row, col, new_row, new_col)
+
+    @abstractmethod
+    def evaluate_board(self, game: teeko.TeekoGame):
+        """
+        Evaluates the board state for the current player.
+
+        Args:
+            game (teeko.TeekoGame): Current game state.
+
+        Returns:
+            int: Evaluation score.
+        """
+        raise NotImplementedError("evaluate_board method must be implemented in the subclass")

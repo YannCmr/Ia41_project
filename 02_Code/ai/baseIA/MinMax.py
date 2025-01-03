@@ -1,6 +1,6 @@
-from BaseIA import BaseAI
-
-
+from .BaseIA import BaseAI
+from abc import ABC, abstractmethod
+import teeko
 class MinMax(BaseAI):
     def minimax(self, game, depth, is_maximizing):
         if depth == 0 or game.is_game_over():
@@ -31,3 +31,25 @@ class MinMax(BaseAI):
     def next_move(self, board):
         _, move = self.minimax(board, self.depth, True)
         return move
+    
+    def apply_move(self, game: teeko.TeekoGame, move):
+            """Applies a move to the game state."""
+            row, col, new_row, new_col = move
+            if new_row is None and new_col is None:
+                game.move(row, col)
+            else:
+                game.move(row, col, new_row, new_col)
+
+   
+    @abstractmethod
+    def evaluate_board(self, game: teeko.TeekoGame):
+        """
+        Evaluates the board state for the current player.
+
+        Args:
+            game (teeko.TeekoGame): Current game state.
+
+        Returns:
+            int: Evaluation score.
+        """
+        raise NotImplementedError("evaluate_board method must be implemented in the subclass")
