@@ -4,11 +4,12 @@ This file contains the Tkinter classes for the Teeko game. It primarily displays
     Includes: GameBoard, Player, Turn, and OptionDialog classes.
 """
 
-import os.path
-import teeko  # Linking with teeko.py game logic
-import tkinter
 import glob
+import os.path
 import time
+import tkinter
+
+import teeko  # Linking with teeko.py game logic
 
 # GUI / Tkinter object constants
 BACKGROUND_COLOR = '#FFFFFF'

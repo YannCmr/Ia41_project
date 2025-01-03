@@ -1,5 +1,6 @@
 import teeko
 
+
 def evaluate_central_control(game, player):
     """
     Évalue le contrôle central du joueur sur le plateau.

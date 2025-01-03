@@ -1,8 +1,15 @@
+import teeko
+from ai.baseIA.heuristiques import (
+    evaluate_aligned_pieces,
+    evaluate_central_control,
+    evaluate_corner_penalty,
+    evaluate_defensive_threats,
+    evaluate_mobility,
+    evaluate_near_victory,
+)
 from ai.baseIA.MinMax import MinMax
 
-import teeko
 
-from ai.baseIA.heuristiques import evaluate_central_control, evaluate_mobility, evaluate_near_victory, evaluate_defensive_threats, evaluate_aligned_pieces, evaluate_corner_penalty
 class MiniMax_new(MinMax):
     def __init__(self, depth=3):
         self.depth = depth

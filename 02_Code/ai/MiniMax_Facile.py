@@ -1,8 +1,12 @@
+import teeko
+from ai.baseIA.heuristiques import (
+    evaluate_central_control,
+    evaluate_mobility,
+    evaluate_near_victory,
+)
 from ai.baseIA.MinMax import MinMax
 
-import teeko
 
-from ai.baseIA.heuristiques import evaluate_central_control, evaluate_mobility, evaluate_near_victory
 class MiniMax_Facile(MinMax):
     def __init__(self, depth=3):
         self.depth = depth

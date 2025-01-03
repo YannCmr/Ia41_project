@@ -1,6 +1,10 @@
-from .BaseIA import BaseAI
 from abc import ABC, abstractmethod
+
 import teeko
+
+from .BaseIA import BaseAI
+
+
 class MinMax(BaseAI):
     def minimax(self, game, depth, is_maximizing):
         if depth == 0 or game.is_game_over():

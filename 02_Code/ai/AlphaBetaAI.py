@@ -1,8 +1,13 @@
-from ai.baseIA.AlphaBeta import AlphaBeta
-
 import teeko
+from ai.baseIA.AlphaBeta import AlphaBeta
+from ai.baseIA.heuristiques import (
+    evaluate_central_control,
+    evaluate_connectivity,
+    evaluate_defense,
+    evaluate_mobility,
+    evaluate_near_victory,
+)
 
-from ai.baseIA.heuristiques import evaluate_central_control, evaluate_mobility, evaluate_near_victory, evaluate_defense, evaluate_connectivity
 
 class AlphaBetaAI(AlphaBeta):
     def __init__(self, depth=4):

@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
-import teeko 
+
+import teeko
+
+
 class BaseAI(ABC):
     def __init__(self, depth=4):
         self.depth = depth

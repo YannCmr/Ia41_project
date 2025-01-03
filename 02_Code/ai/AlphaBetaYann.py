@@ -1,8 +1,12 @@
-from ai.baseIA.AlphaBeta import AlphaBeta
-
 import teeko
+from ai.baseIA.AlphaBeta import AlphaBeta
+from ai.baseIA.heuristiques import (
+    evaluate_central_control,
+    evaluate_mobility,
+    evaluate_near_victory,
+)
 
-from ai.baseIA.heuristiques import evaluate_central_control, evaluate_mobility, evaluate_near_victory
+
 class AlphaBetaYann(AlphaBeta):
     def __init__(self, depth=4):
         self.depth = depth

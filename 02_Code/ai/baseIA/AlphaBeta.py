@@ -1,7 +1,11 @@
 
-from .BaseIA import BaseAI
-import teeko
 from abc import ABC, abstractmethod
+
+import teeko
+
+from .BaseIA import BaseAI
+
+
 class AlphaBeta(BaseAI):
     def alpha_beta(self, game: teeko.TeekoGame, depth: int, alpha: float, beta: float, is_maximizing: bool):
         """
