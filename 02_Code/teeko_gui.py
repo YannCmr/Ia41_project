@@ -1,10 +1,11 @@
 # Teeko specific GUI adjustments based on Othello's interface
 
 import importlib
-import teeko  
-import teeko_models 
-import tkinter
 import time
+import tkinter
+
+import teeko
+import teeko_models
 
 # Update GUI constants for Teeko, if any changes required
 GAME_HEIGHT = 400

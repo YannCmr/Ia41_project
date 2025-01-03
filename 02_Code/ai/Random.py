@@ -1,6 +1,7 @@
 import math
-import teeko
 import random
+
+import teeko
 
 
 class Random:

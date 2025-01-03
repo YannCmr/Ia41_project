@@ -7,10 +7,7 @@ from ai.baseIA.heuristiques import (
 )
 
 
-class AlphaBetaYann(AlphaBeta):
-    def __init__(self, depth=4):
-        self.depth = depth
-
+class AlphaBetaDur(AlphaBeta):
     def evaluate_board(self, game: teeko.TeekoGame):
         """
         Evaluates the board state for the current player.
@@ -41,7 +38,8 @@ class AlphaBetaYann(AlphaBeta):
             15 * near_victory_score  # Strongly favor near-victory conditions
         )
         return total_score
-    
+
     def __str__(self):
-        return "AlphaBetaYann"
+        return "AlphaBetaDur"    
+
 

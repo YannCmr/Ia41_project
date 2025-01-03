@@ -196,3 +196,13 @@ class TeekoGame:
         new_game.placement_phase = self.placement_phase
         new_game.winner = self.winner
         return new_game
+
+    def get_adjacent_cells(self, row, col):
+        """Returns a list of adjacent cells for movement."""
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
+        adjacent_cells = []
+        for drow, dcol in directions:
+            new_row, new_col = row + drow, col + dcol
+            if self._is_valid_cell(new_row, new_col) and self.current_board[new_row][new_col] == NONE:
+                adjacent_cells.append((new_row, new_col))
+        return adjacent_cells
