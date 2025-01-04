@@ -10,7 +10,7 @@ from ai.baseIA.heuristiques import (
 from ai.baseIA.MinMax import MinMax
 
 
-class MiniMax_new(MinMax):
+class MiniMaxMoyen(MinMax):
     def __init__(self, depth=3):
         self.depth = depth
 
@@ -70,36 +70,41 @@ class MiniMax_new(MinMax):
         # Mobility score: reward having more possible moves 
         mobility_score = evaluate_mobility(game, current_player)
 
-        # Near victory score: Proximity to victory
-        #near_victory_score = evaluate_near_victory(game, current_player)
-
         # Cenral control score: reward central positions
         central_control = evaluate_central_control(game, current_player)
 
-        # Defensive score : reward mitigating opponent threats
-        #defensive_threats_score = evaluate_defensive_threats(game, opponent)
-
-        # Winning move: prioritize immediate winning opportunities
-        #winning_move = check_winning_placement(game, current_player)
-        #winning_move_score = 100 if winning_move else 0  # Large weight for immediate victory
-
-        # Penalty corner
-        #corner_penalty = evaluate_corner_penalty(game, current_player)
-
         # Combine all heuristics
         total_score = (
-            #12 * defensive_threats_score +
             10 * aligned_score +
             8 * central_control +
             5 * mobility_score 
-            #50 * corner_penalty
-            #10 * near_victory_score 
-            # winning_move_score
-            
         )
 
         
         return total_score
+    
+    def check_winning_placement(self, game, player):
+        """
+        Checks if the AI can win during the placement phase by completing a winning configuration.
+        Args:
+            game (teeko.TeekoGame): Current game state.
+            player (str): Current player ('B' or 'W').
+        Returns:
+            tuple: Coordinates (row, col) to place a winning piece, or None if no winning move is possible.
+        This function was not chosen for the final version because it significantly slowed down the AI's moves.
+        """
+        board = game.get_board()
+
+        for row in range(game.get_rows()):
+            for col in range(game.get_columns()):
+                if board[row][col] == teeko.NONE:  # Check empty cell
+                    board[row][col] = player  # Simulate placement
+                    if self.is_winning_position(self, game, player):
+                        board[row][col] = teeko.NONE  # Reset the board
+                        return row, col
+                    board[row][col] = teeko.NONE  # Reset the board
+        return None
+
     
     @staticmethod
     def is_winning_position(self, game, player):
@@ -115,11 +120,33 @@ class MiniMax_new(MinMax):
         """
         board = game.get_board()  # Get the current board state
         return (
-            any(MiniMax_new.check_line(board, row, player) for row in range(game.get_rows())) or
-            any(MiniMax_new.check_column(board, col, player) for col in range(game.get_columns())) or
-            MiniMax_new.check_main_diagonal(board, player) or
-            MiniMax_new.check_anti_diagonal(board, player) or
-            MiniMax_new.check_squares(board, player)
+            any(MiniMaxMoyen.check_line(board, row, player) for row in range(game.get_rows())) or
+            any(MiniMaxMoyen.check_column(board, col, player) for col in range(game.get_columns())) or
+            MiniMaxMoyen.check_main_diagonal(board, player) or
+            MiniMaxMoyen.check_anti_diagonal(board, player) or
+            MiniMaxMoyen.check_squares(board, player)
+        )
+
+
+    @staticmethod
+    def is_winning_position(self, game, player):
+        """
+        Checks if a given board position is a winning configuration for the player.
+
+        Args:
+            game (teeko.TeekoGame): The current game state.
+            player (str): The player's symbol (e.g., 'B' or 'W').
+
+        Returns:
+            bool: True if the player has a winning configuration, False otherwise.
+        """
+        board = game.get_board()  # Get the current board state
+        return (
+            any(MiniMaxMoyen.check_line(board, row, player) for row in range(game.get_rows())) or
+            any(MiniMaxMoyen.check_column(board, col, player) for col in range(game.get_columns())) or
+            MiniMaxMoyen.check_main_diagonal(board, player) or
+            MiniMaxMoyen.check_anti_diagonal(board, player) or
+            MiniMaxMoyen.check_squares(board, player)
         )
 
 
@@ -219,49 +246,7 @@ class MiniMax_new(MinMax):
                     return True
         return False
 
-    def check_winning_placement(self, game, player):
-        """
-        Checks if the AI can win during the placement phase by completing a winning configuration.
-        Args:
-            game (teeko.TeekoGame): Current game state.
-            player (str): Current player ('B' or 'W').
-        Returns:
-            tuple: Coordinates (row, col) to place a winning piece, or None if no winning move is possible.
-        """
-        board = game.get_board()
-
-        for row in range(game.get_rows()):
-            for col in range(game.get_columns()):
-                if board[row][col] == teeko.NONE:  # Check empty cell
-                    board[row][col] = player  # Simulate placement
-                    if self.is_winning_position(self, game, player):
-                        board[row][col] = teeko.NONE  # Reset the board
-                        return row, col
-                    board[row][col] = teeko.NONE  # Reset the board
-        return None
-
     
-    @staticmethod
-    def is_winning_position(self, game, player):
-        """
-        Checks if a given board position is a winning configuration for the player.
-
-        Args:
-            game (teeko.TeekoGame): The current game state.
-            player (str): The player's symbol (e.g., 'B' or 'W').
-
-        Returns:
-            bool: True if the player has a winning configuration, False otherwise.
-        """
-        board = game.get_board()  # Get the current board state
-        return (
-            any(MiniMax_new.check_line(board, row, player) for row in range(game.get_rows())) or
-            any(MiniMax_new.check_column(board, col, player) for col in range(game.get_columns())) or
-            MiniMax_new.check_main_diagonal(board, player) or
-            MiniMax_new.check_anti_diagonal(board, player) or
-            MiniMax_new.check_squares(board, player)
-        )
-
 
     def __str__(self):
-        return "MiniMax_new"
+        return "MiniMaxMoyen"

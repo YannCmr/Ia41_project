@@ -7,7 +7,7 @@ from ai.baseIA.heuristiques import (
 from ai.baseIA.MinMax import MinMax
 
 
-class TeekoMinimaxAI(MinMax):
+class MiniMaxFacile(MinMax):
     def __init__(self, depth=3):
         self.depth = depth
 
@@ -41,5 +41,6 @@ class TeekoMinimaxAI(MinMax):
         )
         return total_score
 
+
     def __str__(self):
-        return "TeekoMinimaxAI"
+        return "MiniMaxFacile"

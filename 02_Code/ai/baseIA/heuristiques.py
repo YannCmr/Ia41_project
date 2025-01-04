@@ -410,6 +410,8 @@ def evaluate_aligned_pieces( game: teeko.TeekoGame, player: str):
 def evaluate_corner_penalty( game, player) -> int:
     """
     Penalizes moves in the corners of the board.
+    Even with a high weight for this penalty, the AI still plays in the corners.
+    This heuristic was not chosen for the final version because it does not improve the AI's gameplay.
     """
     rows, cols = game.get_rows(), game.get_columns()
     board = game.get_board()
