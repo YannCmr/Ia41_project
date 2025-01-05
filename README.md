@@ -25,8 +25,7 @@ réalise une configuration gagnante, la partie s'arrête.
     ├── 01_Documents/      
     │   ├── IA41 Projets2024.pdf   <- File with the project requirements    
     │   ├── IA41 Sujet Teeko.pdf   <- File with the game logic   
-    │   ├── Proj_teeko.txt         <- File used to iterate on the project and to dispatch tasks      
-    │   └── Teeko.docx             <- File used to iterate on the project and to dispatch tasks       
+    │   ├── Report_COMOR_NIMHAOULIN_STRABACH.pdf   <- Report of the project     
     ├── 02_Code/   
     │   ├── ai/                 <- Folder with the AI code
     │   └── __pycache__/
@@ -43,8 +42,8 @@ réalise une configuration gagnante, la partie s'arrête.
 
 ## Téléchargement du code
 
-Pour télécharger le code, il suffit de cloner le repository : 
-**via HTTPS**
+Pour télécharger le code, il suffit de cloner le repository :   
+**via HTTPS**  
 ```bash
 git clone https://github.com/YannCmr/Ia41_project.git
 ```
@@ -66,7 +65,7 @@ Commencer par créer un venv python :
 python -m venv venv
 ```
 
-Puis l'activer :
+Puis l'activer :  
 sur Windows  
 ```bash
 venv\Scripts\activate
