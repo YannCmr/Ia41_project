@@ -1,6 +1,7 @@
 import teeko
 from ai.baseIA.AlphaBeta import AlphaBeta
 from ai.baseIA.heuristiques import (
+    evaluate_block_opponent,
     evaluate_central_control,
     evaluate_mobility,
     evaluate_near_victory,
@@ -8,38 +9,36 @@ from ai.baseIA.heuristiques import (
 
 
 class AlphaBetaDur(AlphaBeta):
-    def evaluate_board(self, game: teeko.TeekoGame):
+    def __init__(self, depth=4):
+        self.depth = depth
+
+    def evaluate_board(self, game):
         """
-        Evaluates the board state for the current player.
+        Evaluates the current board state.
 
         Args:
-            game (teeko.TeekoGame): Current game state.
+            game (teeko.TeekoGame): The current game state.
 
         Returns:
-            int: Evaluation score.
+            int: Evaluation score for the board.
         """
         current_player = game.get_turn()
         opponent = teeko.BLACK if current_player == teeko.WHITE else teeko.WHITE
 
-
-        # Control the board: reward central positions
         central_control = evaluate_central_control(game, current_player)
-
-        # Mobility: reward having more possible moves
         mobility_score = evaluate_mobility(game, current_player) - evaluate_mobility(game, opponent)
-
-        # Proximity to victory: reward near-winning configurations
         near_victory_score = evaluate_near_victory(game, current_player)
+        block_opponent_score = evaluate_block_opponent(game, opponent)
 
-        # Combine all heuristics
         total_score = (
-            2 * central_control +  # Higher weight for strategic positions
-            5.5 * mobility_score +  # Balance mobility and central control
-            15 * near_victory_score  # Strongly favor near-victory conditions
+            3 * central_control +
+            5 * mobility_score +
+            15 * near_victory_score +
+            10 * block_opponent_score
         )
         return total_score
-
+    
     def __str__(self):
-        return "AlphaBetaDur"    
+        return "AlphaBetaNew"
 
-
+    
